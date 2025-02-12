@@ -36,10 +36,16 @@ class RfidCardResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('student_id')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('student.nis')
+                    ->label('NIS')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('student.name')
+                    ->label('Name')
+                    ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('rfid_card')
+                    ->label('Card Number')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
@@ -48,7 +54,7 @@ class RfidCardResource extends Resource
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: false),
             ])
             ->filters([
                 //

@@ -9,4 +9,8 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateRfidCard extends CreateRecord
 {
     protected static string $resource = RfidCardResource::class;
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
 }
