@@ -23,7 +23,10 @@ class RfidCardResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Select::make('student_id')
-                    ->relationship('student', 'name')
+                    ->relationship('student', 'name', function (Builder $query, $search) {
+                        $query->where('nis', 'like', "%{$search}%")
+                            ->orWhere('name', 'like', "%{$search}%");
+                    })
                     ->searchable()
                     ->required(),
                 Forms\Components\TextInput::make('rfid_card')

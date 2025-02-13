@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Exports\StudentExporter;
 use App\Filament\Resources\StudentResource\Pages;
 use App\Models\Student;
 use Filament\Forms;
@@ -11,6 +12,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Tables\Actions\ExportAction;
 
 class StudentResource extends Resource
 {
@@ -36,7 +38,7 @@ class StudentResource extends Resource
                             $newNumber = str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT); // Generate nomor urut
                             $component->state("{$year}{$month}{$newNumber}"); // Format NIS
                         }
-                    }), 
+                    }),
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255),
@@ -151,7 +153,7 @@ class StudentResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
+                //
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -165,6 +167,8 @@ class StudentResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
+                    ExportAction::make()
+                    ->exporter(StudentExporter::class),
                 ]),
             ]);
     }
