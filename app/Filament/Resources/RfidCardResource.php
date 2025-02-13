@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\RfidCardResource\Pages;
 use App\Filament\Resources\RfidCardResource\RelationManagers;
+use App\Filament\Resources\RfidCardResource\RelationManagers\StudentRelationManager;
 use App\Models\RfidCard;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -77,7 +78,7 @@ class RfidCardResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+
         ];
     }
 

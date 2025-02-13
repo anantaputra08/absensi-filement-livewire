@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Exports\StudentExporter;
 use App\Filament\Resources\StudentResource\Pages;
+use App\Filament\Resources\StudentResource\RelationManagers\RfidCardRelationManager;
 use App\Models\Student;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -13,6 +14,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Enums\FiltersLayout;
 
 class StudentResource extends Resource
 {
@@ -176,7 +178,7 @@ class StudentResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RfidCardRelationManager::class,
         ];
     }
 
@@ -185,7 +187,7 @@ class StudentResource extends Resource
         return [
             'index' => Pages\ListStudents::route('/'),
             'create' => Pages\CreateStudent::route('/create'),
-            // 'edit' => Pages\EditStudent::route('/{record}/edit'),
+            'edit' => Pages\EditStudent::route('/{record}/edit'),
         ];
     }
 

@@ -36,7 +36,10 @@ class ListStudents extends ListRecords
         return [
             'all' => Tab::make()
                 ->modifyQueryUsing(fn(Builder $query) => $query->withTrashed())
-                ->badge(Student::withTrashed()->count()),
+                ->badge(Student::withTrashed()->count())
+                ->extraAttributes([
+                    'class' => 'bg-red-100 border-red-300 p-2',
+                ]),
 
             'active' => Tab::make()
                 ->modifyQueryUsing(fn(Builder $query) => $query->withoutTrashed())
