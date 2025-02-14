@@ -6,12 +6,18 @@ use App\Filament\Resources\AttendanceResource\Pages;
 use App\Filament\Resources\AttendanceResource\RelationManagers;
 use App\Models\Attendance;
 use Filament\Forms;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Filters\Indicator;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\Filter;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 
@@ -98,7 +104,8 @@ class AttendanceResource extends Resource
                 Tables\Columns\TextColumn::make('rfid_card')
                     ->label('Card Number')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('rfidCard.student.nis')
                     ->label('NIS')
                     ->sortable()
@@ -158,7 +165,86 @@ class AttendanceResource extends Resource
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
-            ])
+                SelectFilter::make('status')
+                    ->options([
+                        'telat' => 'Telat',
+                        'masuk' => 'Masuk',
+                        'izin' => 'Izin',
+                    ])
+                    ->label('Status'),
+
+                Filter::make('month')
+                    ->form([
+                        Select::make('month')
+                            ->label('Choose Month')
+                            ->options([
+                                '01' => 'January',
+                                '02' => 'February',
+                                '03' => 'March',
+                                '04' => 'April',
+                                '05' => 'May',
+                                '06' => 'June',
+                                '07' => 'July',
+                                '08' => 'August',
+                                '09' => 'September',
+                                '10' => 'October',
+                                '11' => 'November',
+                                '12' => 'December',
+                            ])
+                            ->native(false)
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query->when(
+                            $data['month'] ?? null,
+                            fn(Builder $query, $month): Builder => $query->whereMonth('created_at', $month)
+                        );
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+
+                        if ($data['month'] ?? null) {
+                            $indicators[] = Indicator::make('Bulan: ' . Carbon::createFromFormat('m', $data['month'])->translatedFormat('F'))
+                                ->removeField('month');
+                        }
+
+                        return $indicators;
+                    }),
+
+                Filter::make('created_at')
+                    ->form([
+                        DatePicker::make('from')
+                            ->native(false),
+                        DatePicker::make('until')
+                            ->native(false),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['from'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['until'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                            );
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+
+                        if ($data['from'] ?? null) {
+                            $indicators[] = Indicator::make('Created from ' . Carbon::parse($data['from'])->toFormattedDateString())
+                                ->removeField('from');
+                        }
+
+                        if ($data['until'] ?? null) {
+                            $indicators[] = Indicator::make('Created until ' . Carbon::parse($data['until'])->toFormattedDateString())
+                                ->removeField('until');
+                        }
+
+                        return $indicators;
+                    })
+                    ->columnSpan(2)->columns(2)
+            ], layout: FiltersLayout::AboveContent)
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),

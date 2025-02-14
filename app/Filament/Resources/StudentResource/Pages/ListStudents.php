@@ -35,16 +35,19 @@ class ListStudents extends ListRecords
     {
         return [
             'all' => Tab::make()
+                ->icon('heroicon-s-user-group')
                 ->modifyQueryUsing(fn(Builder $query) => $query->withTrashed())
                 ->badge(Student::withTrashed()->count())
                 ->badgeColor('primary'),
 
             'active' => Tab::make()
+                ->icon('heroicon-s-user')
                 ->modifyQueryUsing(fn(Builder $query) => $query->withoutTrashed())
                 ->badge(Student::withoutTrashed()->count())
                 ->badgeColor('success'),
 
             'deleted' => Tab::make()
+                ->icon('heroicon-s-trash')
                 ->modifyQueryUsing(fn(Builder $query) => $query->onlyTrashed())
                 ->badge(Student::onlyTrashed()->count())
                 ->badgeColor('danger'),
