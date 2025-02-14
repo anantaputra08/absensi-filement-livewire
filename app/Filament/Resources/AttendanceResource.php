@@ -114,7 +114,13 @@ class AttendanceResource extends Resource
                     ->dateTime()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('status')
-                ,
+                    ->sortable()
+                    ->color(fn($record) => match ($record->status) {
+                        'telat' => 'danger',
+                        'masuk' => 'primary',
+                        'izin' => 'warning',
+                    })
+                    ->badge(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -144,7 +150,7 @@ class AttendanceResource extends Resource
                         return trim($timeString) . ' ago';
                     })
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: false),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('deleted_at')
                     ->dateTime()
                     ->sortable()
