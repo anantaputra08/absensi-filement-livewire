@@ -191,20 +191,38 @@ class AttendanceResource extends Resource
                                 '11' => 'November',
                                 '12' => 'December',
                             ])
+                            ->native(false),
+                        Select::make('year')
+                            ->label('Choose Year')
+                            ->options(
+                                Attendance::query()
+                                    ->selectRaw('DISTINCT YEAR(created_at) as year')
+                                    ->pluck('year', 'year')
+                                    ->toArray()
+                            )
                             ->native(false)
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query->when(
                             $data['month'] ?? null,
                             fn(Builder $query, $month): Builder => $query->whereMonth('created_at', $month)
-                        );
+                        )->when(
+                                $data['year'] ?? null,
+                                fn(Builder $query, $year): Builder => $query->whereYear('created_at', $year)
+                            );
                     })
                     ->indicateUsing(function (array $data): array {
                         $indicators = [];
 
                         if ($data['month'] ?? null) {
-                            $indicators[] = Indicator::make('Bulan: ' . Carbon::createFromFormat('m', $data['month'])->translatedFormat('F'))
+                            $month = Carbon::createFromFormat('m', $data['month'])->translatedFormat('F');
+                            $indicators[] = Indicator::make('Bulan: ' . $month)
                                 ->removeField('month');
+                        }
+
+                        if ($data['year'] ?? null) {
+                            $indicators[] = Indicator::make('Tahun: ' . $data['year'])
+                                ->removeField('year');
                         }
 
                         return $indicators;
