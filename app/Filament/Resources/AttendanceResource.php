@@ -13,6 +13,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class AttendanceResource extends Resource
 {
@@ -24,49 +25,68 @@ class AttendanceResource extends Resource
     {
         return $form
             ->schema([
-                // Forms\Components\Select::make('rfid_card')
-                //     ->label('Student Name')
-                //     ->options(function () {
-                //         return \App\Models\RfidCard::with('student')
-                //             ->get()
-                //             ->pluck('student.name', 'rfid_card');
-                //     })
-                //     ->searchable()
-                //     ->required(),
                 Forms\Components\Select::make('student_id')
                     ->label('Student Name')
                     ->options(function () {
-                        return \App\Models\Student::pluck('name', 'id');
+                        return \App\Models\Student::query()
+                            ->with('rfidCard')  // Eager load rfidCard
+                            ->get()
+                            ->pluck('name', 'id');
                     })
                     ->searchable()
                     ->getSearchResultsUsing(function (string $search) {
                         return \App\Models\Student::query()
-                            ->where('nis', 'like', "%{$search}%")
-                            ->orWhere('name', 'like', "%{$search}%")
+                            ->where('name', 'like', "%{$search}%")
+                            ->orWhere('nis', 'like', "%{$search}%")
                             ->pluck('name', 'id')
                             ->toArray();
                     })
-                    ->reactive() // Supaya RFID Card otomatis berubah saat siswa dipilih
-                    ->required()
+                    ->reactive()
                     ->afterStateUpdated(function (callable $set, callable $get) {
-                        $studentId = $get('student_id'); // Ambil student_id yang dipilih
+                        $studentId = $get('student_id');
                         if ($studentId) {
-                            $rfidCard = \App\Models\RfidCard::where('student_id', $studentId)->value('rfid_card');
-                            $set('rfid_card', $rfidCard); // Set nilai rfid_card secara otomatis
+                            // Ambil RFID card dari student
+                            $rfidCard = \App\Models\RfidCard::where('student_id', $studentId)
+                                ->latest()  // Ambil yang terbaru jika ada multiple cards
+                                ->first();
+
+                            if ($rfidCard) {
+                                $set('rfid_card', $rfidCard->rfid_card);
+                            } else {
+                                $set('rfid_card', null);
+                            }
                         } else {
-                            $set('rfid_card', null); // Reset nilai jika tidak ada siswa yang dipilih
+                            $set('rfid_card', null);
                         }
                     }),
 
                 Forms\Components\TextInput::make('rfid_card')
-                    ->label('Card Number')
+                    ->label('RFID Card')
                     ->required()
                     ->disabled()
-                    ->dehydrated(),
+                    ->reactive()
+                    ->dehydrated()
+                    ->afterStateUpdated(function (callable $set, callable $get) {
+                        $rfidCard = $get('rfid_card');
+                        if ($rfidCard) {
+                            $card = \App\Models\RfidCard::where('rfid_card', $rfidCard)->first();
+                            if ($card) {
+                                $set('student_id', $card->student_id);
+                            }
+                        }
+                    }),
+
                 Forms\Components\DateTimePicker::make('check_in')
                     ->required(),
+
                 Forms\Components\DateTimePicker::make('check_out'),
-                Forms\Components\TextInput::make('status')
+
+                Forms\Components\Select::make('status')
+                    ->options([
+                        'telat' => 'Telat',
+                        'masuk' => 'Masuk',
+                        'izin' => 'Izin',
+                    ])
                     ->required(),
             ]);
     }
@@ -93,7 +113,8 @@ class AttendanceResource extends Resource
                 Tables\Columns\TextColumn::make('check_out')
                     ->dateTime()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('status'),
+                Tables\Columns\TextColumn::make('status')
+                ,
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

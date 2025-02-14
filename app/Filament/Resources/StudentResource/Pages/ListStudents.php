@@ -27,7 +27,7 @@ class ListStudents extends ListRecords
                 ->color('success')
                 ->icon('heroicon-c-arrow-down-tray'),
             Actions\CreateAction::make()
-                ->color('info')
+                ->color('primary')
                 ->icon('heroicon-c-plus'),
         ];
     }
@@ -37,9 +37,7 @@ class ListStudents extends ListRecords
             'all' => Tab::make()
                 ->modifyQueryUsing(fn(Builder $query) => $query->withTrashed())
                 ->badge(Student::withTrashed()->count())
-                ->extraAttributes([
-                    'class' => 'bg-red-100 border-red-300 p-2',
-                ]),
+                ->badgeColor('primary'),
 
             'active' => Tab::make()
                 ->modifyQueryUsing(fn(Builder $query) => $query->withoutTrashed())

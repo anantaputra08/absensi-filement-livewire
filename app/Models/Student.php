@@ -31,8 +31,17 @@ class Student extends Model
 
     public function rfidCard()
     {
-        return $this->hasOne(RfidCard::class, 'student_id', 'id');
+        return $this->hasMany(RfidCard::class, 'student_id', 'id');
     }
-
-
+    public function attendances()
+    {
+        return $this->hasManyThrough(
+            Attendance::class,
+            RfidCard::class,
+            'student_id',
+            'rfid_card',
+            'id',
+            'rfid_card'
+        );
+    }
 }

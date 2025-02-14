@@ -22,4 +22,9 @@ class Attendance extends Model
         return $this->belongsTo(RfidCard::class, 'rfid_card', 'rfid_card');
     }
 
+    public function student()
+    {
+        return $this->belongsTo(Student::class)->through('rfidCard');
+    }
+
 }
