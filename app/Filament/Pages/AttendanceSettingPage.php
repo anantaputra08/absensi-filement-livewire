@@ -6,6 +6,9 @@ use Filament\Forms;
 use Filament\Pages\Page;
 use App\Models\AttendanceSetting;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Card;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TimePicker;
 use Filament\Notifications\Notification;
 
@@ -24,13 +27,39 @@ class AttendanceSettingPage extends Page implements Forms\Contracts\HasForms
     protected function getFormSchema(): array
     {
         return [
-            TimePicker::make('check_in_time')->required(),
-            TimePicker::make('check_out_time')->required(),
-            TimePicker::make('check_in_max_time')->required(),
-            TimePicker::make('check_out_min_time')->required(),
+            Card::make()
+                ->schema([
+                    Section::make('Check In Settings')
+                        ->icon('tabler-door-enter')
+                        ->iconColor('primary')
+                        ->schema([
+                            Grid::make(2)
+                                ->schema([
+                                    TimePicker::make('check_in_time')
+                                        ->label('Check In Time')
+                                        ->required(),
+                                    TimePicker::make('check_in_max_time')
+                                        ->label('Until')
+                                        ->required(),
+                                ]),
+                        ]),
+                    Section::make('Check Out Settings')
+                        ->icon('tabler-door-exit')
+                        ->iconColor('danger')
+                        ->schema([
+                            Grid::make(2)
+                                ->schema([
+                                    TimePicker::make('check_out_time')
+                                        ->label('Check Out Time')
+                                        ->required(),
+                                    TimePicker::make('check_out_min_time')
+                                        ->label('Until')
+                                        ->required(),
+                                ]),
+                        ]),
+                ]),
         ];
     }
-
     public function mount()
     {
         $settings = AttendanceSetting::first();
