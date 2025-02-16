@@ -26,7 +26,6 @@ class AttendanceForm extends Component
 
         $rfidCard = RfidCard::where('rfid_card', $this->rfid_card)->first();
         $student = $rfidCard ? $rfidCard->student : null;
-        
 
         if ($student) {
             Attendance::create([
