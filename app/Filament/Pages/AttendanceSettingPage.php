@@ -7,6 +7,7 @@ use Filament\Pages\Page;
 use App\Models\AttendanceSetting;
 use Filament\Actions\Action;
 use Filament\Forms\Components\TimePicker;
+use Filament\Notifications\Notification;
 
 class AttendanceSettingPage extends Page implements Forms\Contracts\HasForms
 {
@@ -52,7 +53,10 @@ class AttendanceSettingPage extends Page implements Forms\Contracts\HasForms
         $settings->check_out_min_time = $this->check_out_min_time;
         $settings->save();
 
-        $this->notify('success', 'Settings saved successfully!');
+        Notification::make()
+            ->title('Settings saved successfully!')
+            ->success()
+            ->send();
     }
 
     protected function getActions(): array
