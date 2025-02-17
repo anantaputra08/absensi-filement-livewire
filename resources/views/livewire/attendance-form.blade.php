@@ -22,6 +22,7 @@
                 <p><span class="font-medium">Status:</span> 
                     <span class="px-3 py-1 rounded-md text-gray-200 font-semibold 
                         @if($student->attendances->last()->status === 'masuk') bg-green-500 
+                        @elseif($student->attendances->last()->status === 'telat') bg-yellow-500 
                         @else bg-red-500 @endif">
                         {{ $student->attendances->last()->status }}
                     </span>
