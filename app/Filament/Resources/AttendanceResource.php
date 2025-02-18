@@ -164,6 +164,7 @@ class AttendanceResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('updated_at', 'desc')
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
                 SelectFilter::make('status')

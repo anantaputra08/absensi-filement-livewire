@@ -75,6 +75,14 @@ class AttendanceForm extends Component
             return;
         }
 
+        // Jika sudah check-in sebelumnya
+        if ($existingAttendance && AttendanceSetting::isCheckOutTime()) {
+            $this->message = 'Anda sudah melakukan check out hari ini!';
+            $this->student = $student;
+            $this->reset('rfid_card');
+            return;
+        }
+
         // Jika belum checkin dan sudah melewati batas waktu checkin
         if (!$existingAttendance && AttendanceSetting::isLate()) {
             Attendance::create([
