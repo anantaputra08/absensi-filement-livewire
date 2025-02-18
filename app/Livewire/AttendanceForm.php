@@ -15,7 +15,7 @@ class AttendanceForm extends Component
     public $message;
 
     protected $rules = [
-        'rfid_card' => 'required|exists:rfid_cards,rfid_card',
+        'rfid_card' => 'required',
     ];
 
     public function updatedRfidCard($value)
@@ -27,10 +27,21 @@ class AttendanceForm extends Component
     {
         $this->validate();
         $this->message = '';
-        
-        $rfidCard = RfidCard::where('rfid_card', $this->rfid_card)->firstOrFail();
-        $student = $rfidCard ? $rfidCard->student : null;
 
+        // Cek apakah kartu RFID ada di database
+        $rfidCard = RfidCard::where('rfid_card', $this->rfid_card)->first();
+
+        // Jika kartu tidak ditemukan
+        if (!$rfidCard) {
+            $this->message = 'Kartu RFID tidak ditemukan';
+            $this->reset('rfid_card');
+            return;
+        }
+
+        // Ambil data student yang terkait dengan kartu RFID
+        $student = $rfidCard->student;
+
+        // Jika tidak ada student yang terkait dengan kartu RFID
         if (!$student) {
             $this->message = 'Kartu RFID tidak terdaftar';
             $this->reset('rfid_card');
@@ -43,7 +54,7 @@ class AttendanceForm extends Component
             ->whereDate('check_in', $today)
             ->first();
 
-        // Jika sudah checkout time, update checkout untuk attendance yang belum checkout
+        // Jika sudah masuk waktu checkout
         if (AttendanceSetting::isCheckOutTime()) {
             if ($existingAttendance && !$existingAttendance->check_out) {
                 $existingAttendance->update([
@@ -56,7 +67,7 @@ class AttendanceForm extends Component
             }
         }
 
-        // Jika sudah ada attendance hari ini dan masih dalam waktu checkin
+        // Jika sudah check-in sebelumnya
         if ($existingAttendance && !AttendanceSetting::isCheckOutTime()) {
             $this->message = 'Anda sudah melakukan check in hari ini!';
             $this->student = $student;
@@ -91,6 +102,7 @@ class AttendanceForm extends Component
 
         $this->reset('rfid_card');
     }
+
 
     public function render()
     {
