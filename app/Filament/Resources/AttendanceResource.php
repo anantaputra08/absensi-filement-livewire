@@ -126,6 +126,7 @@ class AttendanceResource extends Resource
                         'telat' => 'danger',
                         'masuk' => 'primary',
                         'izin' => 'warning',
+                        'alpa' => 'danger',
                     })
                     ->badge(),
                 Tables\Columns\TextColumn::make('created_at')
