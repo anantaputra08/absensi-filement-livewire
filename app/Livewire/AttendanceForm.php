@@ -6,6 +6,8 @@ use App\Models\Attendance;
 use App\Models\AttendanceSetting;
 use App\Models\RfidCard;
 use Carbon\Carbon;
+use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 
 class AttendanceForm extends Component
@@ -75,7 +77,7 @@ class AttendanceForm extends Component
             return;
         }
 
-        // Jika sudah check-in sebelumnya
+        // Jika sudah check-out sebelumnya
         if ($existingAttendance && AttendanceSetting::isCheckOutTime()) {
             $this->message = 'Anda sudah melakukan check out hari ini!';
             $this->student = $student;
@@ -83,29 +85,70 @@ class AttendanceForm extends Component
             return;
         }
 
-        // Jika belum checkin dan sudah melewati batas waktu checkin
-        if (!$existingAttendance && AttendanceSetting::isLate()) {
-            Attendance::create([
-                'rfid_card' => $this->rfid_card,
-                'check_in' => now(),
-                'status' => 'alpa',
-            ]);
-            $this->message = 'Anda telah melewati batas waktu check in!';
+        // Logic untuk check in dan status
+        if (!$existingAttendance) {
+            // Add logging
+            Log::info('Current time: ' . now());
+
+            if (AttendanceSetting::isCheckOutTime()) {
+                Log::info('Condition: Checkout time');
+                // Alpa logic
+            } else if (AttendanceSetting::isLate()) {
+                Log::info('Condition: Late time');
+                // Telat logic
+            } else {
+                Log::info('Condition: Normal time');
+                // Normal logic
+            }
+
+            Log::info('Current time: ' . now());
+            Log::info('Is Late: ' . (AttendanceSetting::isLate() ? 'true' : 'false'));
+            Log::info('Is Checkout Time: ' . (AttendanceSetting::isCheckOutTime() ? 'true' : 'false'));
+            // Jika belum check in
+            if (AttendanceSetting::isCheckOutTime()) {
+                // Jika sudah waktu checkout (terlalu telat), status alpa
+                Attendance::create([
+                    'rfid_card' => $this->rfid_card,
+                    'check_in' => now(),
+                    'status' => 'alpa',
+                ]);
+
+                Notification::make()
+                    ->title('You have passed the check in deadline!')
+                    ->body('If you forget to check in, please contact Guidance and Counseling (BK).')
+                    ->danger()
+                    ->send();
+                // $this->message = 'Anda telah melewati batas waktu check in dan checkout!';
+            } else if (AttendanceSetting::isLate()) {
+                // Jika lewat batas check in tapi belum waktu checkout, status telat
+                Attendance::create([
+                    'rfid_card' => $this->rfid_card,
+                    'check_in' => now(),
+                    'status' => 'telat',
+                ]);
+
+                Notification::make()
+                    ->title('You are late checking in!')
+                    ->warning()
+                    ->send();
+                // $this->message = 'Anda terlambat check in!';
+            } else {
+                // Jika masih dalam waktu check in normal
+                Attendance::create([
+                    'rfid_card' => $this->rfid_card,
+                    'check_in' => now(),
+                    'status' => 'masuk',
+                ]);
+
+                Notification::make()
+                    ->title('Successfully checked in!')
+                    ->success()
+                    ->send();
+                // $this->message = 'Berhasil check in!';
+            }
+
             $this->student = $student;
             $this->reset('rfid_card');
-            return;
-        }
-
-        // Jika belum checkin dan masih dalam waktu checkin
-        if (!$existingAttendance && !AttendanceSetting::isLate()) {
-            $status = AttendanceSetting::isLate() ? 'telat' : 'masuk';
-            Attendance::create([
-                'rfid_card' => $this->rfid_card,
-                'check_in' => now(),
-                'status' => $status,
-            ]);
-            $this->message = 'Berhasil check in!';
-            $this->student = $student;
         }
 
         $this->reset('rfid_card');
@@ -114,9 +157,6 @@ class AttendanceForm extends Component
 
     public function render()
     {
-        return view('livewire.attendance-form', [
-            'student' => $this->student,
-            'message' => $this->message
-        ]);
+        return view('livewire.attendance-form');
     }
 }

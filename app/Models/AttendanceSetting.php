@@ -99,7 +99,7 @@ class AttendanceSetting extends Model
     public static function checkOutMinTime()
     {
         $setting = self::getFirstSetting();
-        return $setting ? $setting->check_out_min_time : '15:00:00';
+        return $setting ? $setting->check_out_time : '15:00:00';
     }
 
     /**
