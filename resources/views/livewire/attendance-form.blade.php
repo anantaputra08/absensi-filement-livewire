@@ -1,8 +1,8 @@
 <div class="max-w-full p-6 bg-white dark:bg-black rounded-lg shadow-md">
     @if($message)
-        <div class="mb-4 p-4 rounded-lg text-sm font-medium
+        <div class="mb-4 p-4 rounded-lg text-l font-medium
             @if(str_contains($message, 'Berhasil')) 
-                 bg-green-200 text-green-800 border border-green-200
+                 {{-- bg-green-200 text-green-800 border border-green-200 --}}
             @elseif(str_contains($message, 'melewati batas')) 
                 bg-red-50 text-red-800 border border-red-200
             @else 

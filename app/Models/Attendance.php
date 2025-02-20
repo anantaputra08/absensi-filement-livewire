@@ -16,6 +16,15 @@ class Attendance extends Model
         'check_out',
         'status',
     ];
+    protected $dates = [
+        'check_in',
+        'check_out',
+        'created_at',
+        'updated_at',
+        'deleted_at'
+    ];
+    // Disable automatic timestamp updates for check_in and check_out
+    public static $autoTimestampFields = ['created_at', 'updated_at'];
 
     public function rfidCard()
     {

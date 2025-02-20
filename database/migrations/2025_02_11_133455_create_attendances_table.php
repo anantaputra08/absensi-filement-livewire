@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('rfid_card');
             $table->timestamp('check_in');
             $table->timestamp('check_out')->nullable();
-            $table->boolean('status', ['telat', 'masuk', 'izin']);
+            $table->boolean('status', ['telat', 'masuk', 'izin', 'alpa']);
             $table->timestamps();
             $table->softDeletes();
 

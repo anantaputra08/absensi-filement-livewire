@@ -62,6 +62,7 @@ class AttendanceForm extends Component
                 $existingAttendance->update([
                     'check_out' => now()
                 ]);
+                // dd($existingAttendance);  
                 $this->message = 'Berhasil checkout!';
                 $this->student = $student;
                 $this->reset('rfid_card');
@@ -87,23 +88,23 @@ class AttendanceForm extends Component
 
         // Logic untuk check in dan status
         if (!$existingAttendance) {
-            // Add logging
-            Log::info('Current time: ' . now());
+            // // Add logging
+            // Log::info('Current time: ' . now());
 
-            if (AttendanceSetting::isCheckOutTime()) {
-                Log::info('Condition: Checkout time');
-                // Alpa logic
-            } else if (AttendanceSetting::isLate()) {
-                Log::info('Condition: Late time');
-                // Telat logic
-            } else {
-                Log::info('Condition: Normal time');
-                // Normal logic
-            }
+            // if (AttendanceSetting::isCheckOutTime()) {
+            //     Log::info('Condition: Checkout time');
+            //     // Alpa logic
+            // } else if (AttendanceSetting::isLate()) {
+            //     Log::info('Condition: Late time');
+            //     // Telat logic
+            // } else {
+            //     Log::info('Condition: Normal time');
+            //     // Normal logic
+            // }
 
-            Log::info('Current time: ' . now());
-            Log::info('Is Late: ' . (AttendanceSetting::isLate() ? 'true' : 'false'));
-            Log::info('Is Checkout Time: ' . (AttendanceSetting::isCheckOutTime() ? 'true' : 'false'));
+            // Log::info('Current time: ' . now());
+            // Log::info('Is Late: ' . (AttendanceSetting::isLate() ? 'true' : 'false'));
+            // Log::info('Is Checkout Time: ' . (AttendanceSetting::isCheckOutTime() ? 'true' : 'false'));
             // Jika belum check in
             if (AttendanceSetting::isCheckOutTime()) {
                 // Jika sudah waktu checkout (terlalu telat), status alpa
