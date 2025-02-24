@@ -5,7 +5,11 @@ namespace App\Livewire;
 use App\Models\Attendance;
 use App\Models\AttendanceSetting;
 use App\Models\RfidCard;
+use App\Models\Student;
 use Carbon\Carbon;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Infolist;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
@@ -88,24 +92,6 @@ class AttendanceForm extends Component
 
         // Logic untuk check in dan status
         if (!$existingAttendance) {
-            // // Add logging
-            // Log::info('Current time: ' . now());
-
-            // if (AttendanceSetting::isCheckOutTime()) {
-            //     Log::info('Condition: Checkout time');
-            //     // Alpa logic
-            // } else if (AttendanceSetting::isLate()) {
-            //     Log::info('Condition: Late time');
-            //     // Telat logic
-            // } else {
-            //     Log::info('Condition: Normal time');
-            //     // Normal logic
-            // }
-
-            // Log::info('Current time: ' . now());
-            // Log::info('Is Late: ' . (AttendanceSetting::isLate() ? 'true' : 'false'));
-            // Log::info('Is Checkout Time: ' . (AttendanceSetting::isCheckOutTime() ? 'true' : 'false'));
-            // Jika belum check in
             if (AttendanceSetting::isCheckOutTime()) {
                 // Jika sudah waktu checkout (terlalu telat), status alpa
                 Attendance::create([
@@ -155,6 +141,69 @@ class AttendanceForm extends Component
         $this->reset('rfid_card');
     }
 
+    public function studentInfolist(Student $record): Infolist
+    {
+        return Infolist::make()
+            ->record($record)
+            ->schema([
+                Section::make('Student Information')
+                    ->heading('Student Information')
+                    ->schema([
+                        TextEntry::make('nis')
+                            ->label('NIS')
+                            ->weight('bold')
+                            ->color('primary'),
+
+                        TextEntry::make('name')
+                            ->label('Name')
+                            ->weight('bold')
+                            ->color('primary'),
+
+                        TextEntry::make('class')
+                            ->label('Class')
+                            ->weight('bold')
+                            ->color('primary'),
+
+                        TextEntry::make('check_in')
+                            ->label('Check-in')
+                            ->weight('bold')
+                            ->color('primary')
+                            ->state(function (Student $record): ?string {
+                                return $record->attendances->last()?->check_in;
+                            }),
+
+                        TextEntry::make('check_out')
+                            ->label('Check-out')
+                            ->weight('bold')
+                            ->color('primary')
+                            ->state(function (Student $record): ?string {
+                                return $record->attendances->last()?->check_out;
+                            })
+                            ->visible(function (Student $record): bool {
+                                return $record->attendances->last()?->check_out !== null;
+                            }),
+
+                        TextEntry::make('status')
+                            ->label('Status')
+                            ->badge()
+                            ->state(function (Student $record): ?string {
+                                return $record->attendances->last()?->status;
+                            })
+                            ->color(function (Student $record): string {
+                                $status = $record->attendances->last()?->status;
+
+                                return match ($status) {
+                                    'masuk' => 'success',
+                                    'telat' => 'warning',
+                                    default => 'danger',
+                                };
+                            })
+                            ->visible(function (Student $record): bool {
+                                return $record->attendances->isNotEmpty();
+                            }),
+                    ]),
+            ]);
+    }
 
     public function render()
     {
