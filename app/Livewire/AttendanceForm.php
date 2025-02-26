@@ -131,6 +131,15 @@ class AttendanceForm extends Component
                     ->send();
                 // $this->message = 'Anda telah melewati batas waktu check in dan checkout!';
             } else if (AttendanceSetting::isLate()) {
+                $checkInTime = now();
+                $maxTime = Carbon::createFromTimeString(AttendanceSetting::checkInMaxTime());
+                $lateDuration = $maxTime->diff($checkInTime);
+                $lateMessage = sprintf(
+                    'You are late by %d hours, %d minutes, and %d seconds.',
+                    $lateDuration->h,
+                    $lateDuration->i,
+                    $lateDuration->s
+                );
                 // Jika lewat batas check in tapi belum waktu checkout, status telat
                 Attendance::create([
                     'rfid_card' => $this->rfid_card,
@@ -140,6 +149,7 @@ class AttendanceForm extends Component
 
                 Notification::make()
                     ->title('You are late checking in!')
+                    ->body($lateMessage)
                     ->warning()
                     ->send();
                 // $this->message = 'Anda terlambat check in!';
