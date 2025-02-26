@@ -39,10 +39,10 @@ class AttendanceForm extends Component
         // Jika kartu tidak ditemukan
         if (!$rfidCard) {
             Notification::make()
-                    ->title('RFID card not found!')
-                    ->body('Please contact Guidance and Counseling (BK) to register your RFID card.')
-                    ->danger()
-                    ->send();
+                ->title('RFID card not found!')
+                ->body('Please contact Guidance and Counseling (BK) to register your RFID card.')
+                ->danger()
+                ->send();
 
             $this->reset('rfid_card');
             return;
@@ -54,10 +54,10 @@ class AttendanceForm extends Component
         // Jika tidak ada student yang terkait dengan kartu RFID
         if (!$student) {
             Notification::make()
-                    ->title('RFID card not registered!')
-                    ->body('Please contact Guidance and Counseling (BK) to register your RFID card.')
-                    ->danger()
-                    ->send();
+                ->title('RFID card not registered!')
+                ->body('Please contact Guidance and Counseling (BK) to register your RFID card.')
+                ->danger()
+                ->send();
 
             $this->reset('rfid_card');
             return;
@@ -94,9 +94,9 @@ class AttendanceForm extends Component
             $this->reset('rfid_card');
 
             Notification::make()
-                    ->title('You have already checked in today!')
-                    ->success()
-                    ->send();
+                ->title('You have already checked in today!')
+                ->success()
+                ->send();
 
             return;
         }
@@ -107,9 +107,9 @@ class AttendanceForm extends Component
             $this->reset('rfid_card');
 
             Notification::make()
-                    ->title('You have already checked out today!')
-                    ->success()
-                    ->send();
+                ->title('You have already checked out today!')
+                ->success()
+                ->send();
 
             return;
         }
@@ -172,42 +172,48 @@ class AttendanceForm extends Component
                 Section::make('Student Information')
                     ->heading('Student Information')
                     ->schema([
-                        \Filament\Infolists\Components\Grid::make(2)
+                        \Filament\Infolists\Components\Grid::make([
+                            'default' => 3,
+                            'sm' => 1,
+                            'md' => 3,
+                        ])
                             ->schema([
-                                TextEntry::make('nis')
-                                    ->label('NIS')
-                                    ->weight('bold')
-                                    ->color('primary'),
+                                // First Column - NIS and Check-in
+                                \Filament\Infolists\Components\Group::make([
+                                    TextEntry::make('nis')
+                                        ->label('NIS')
+                                        ->weight('bold')
+                                        ->color('primary'),
 
-                                TextEntry::make('name')
-                                    ->label('Name')
-                                    ->weight('bold')
-                                    ->color('primary'),
+                                    TextEntry::make('check_in')
+                                        ->label('Check-in')
+                                        ->weight('bold')
+                                        ->color('primary')
+                                        ->state(function (Student $record): ?string {
+                                            return $record->attendances->last()?->check_in;
+                                        }),
+                                ]),
 
-                                TextEntry::make('class')
-                                    ->label('Class')
-                                    ->weight('bold')
-                                    ->color('primary'),
+                                // Second Column - Name and Check-out
+                                \Filament\Infolists\Components\Group::make([
+                                    TextEntry::make('name')
+                                        ->label('Name')
+                                        ->weight('bold')
+                                        ->color('primary'),
 
-                                TextEntry::make('check_in')
-                                    ->label('Check-in')
-                                    ->weight('bold')
-                                    ->color('primary')
-                                    ->state(function (Student $record): ?string {
-                                        return $record->attendances->last()?->check_in;
-                                    }),
+                                    TextEntry::make('check_out')
+                                        ->label('Check-out')
+                                        ->weight('bold')
+                                        ->color('primary')
+                                        ->state(function (Student $record): ?string {
+                                            return $record->attendances->last()?->check_out;
+                                        })
+                                        ->visible(function (Student $record): bool {
+                                            return $record->attendances->last()?->check_out !== null;
+                                        }),
+                                ]),
 
-                                TextEntry::make('check_out')
-                                    ->label('Check-out')
-                                    ->weight('bold')
-                                    ->color('primary')
-                                    ->state(function (Student $record): ?string {
-                                        return $record->attendances->last()?->check_out;
-                                    })
-                                    ->visible(function (Student $record): bool {
-                                        return $record->attendances->last()?->check_out !== null;
-                                    }),
-
+                                // Third Column - Status
                                 TextEntry::make('status')
                                     ->label('Status')
                                     ->badge()
@@ -216,7 +222,6 @@ class AttendanceForm extends Component
                                     })
                                     ->color(function (Student $record): string {
                                         $status = $record->attendances->last()?->status;
-
                                         return match ($status) {
                                             'masuk' => 'success',
                                             'telat' => 'warning',
